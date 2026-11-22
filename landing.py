@@ -410,7 +410,7 @@ AT = {
            "planned_text": "Dieses Add-on ist in Planung und noch nicht in der App. Den Stand siehst du in der Roadmap. Sobald es fertig ist, schaltest du es wie alle Add-ons unter „Verlauf & mehr“ → „Add-ons“ ein.",
            "private_planned": "Auch die Einträge dieses Add-ons werden auf deinem Gerät verschlüsselt, bevor sie den Server erreichen. Ausgeschaltet bleiben sie erhalten.",
 "eyebrow": "Add-on für Kopfwetter", "on": "In Kopfwetter einschalten", "back": "Zu Kopfwetter",
-           "how": "Was es kann", "how_planned": "Was es können soll", "private_h": "Privat wie alles in Kopfwetter",
+           "how": "Was es kann", "how_planned": "Was es können soll", "shot_alt": "Bildschirmfoto: Add-on {} mit Beispieldaten", "private_h": "Privat wie alles in Kopfwetter",
            "private": "Auch die Einträge dieses Add-ons werden auf deinem Gerät verschlüsselt, bevor sie den Server erreichen. Ausschalten blendet es aus, die Einträge bleiben erhalten.",
            "steps_h": "So schaltest du es ein",
            "steps": ["Melde dich in Kopfwetter an, im Browser oder in der App.", "Öffne „Verlauf & mehr“ und dort „Add-ons“.", "Schalte das Add-on ein. Es gilt dann in der App und im Browser."],
@@ -420,7 +420,7 @@ AT = {
            "planned_text": "This add-on is being planned and is not yet in the app. You can follow its progress on the roadmap. Once it is ready, you turn it on like any add-on under “History & more” → “Add-ons”.",
            "private_planned": "The entries of this add-on will also be encrypted on your device before they reach the server. If you turn it off, they are kept.",
            "eyebrow": "Add-on for Kopfwetter", "on": "Turn on in Kopfwetter", "back": "To Kopfwetter",
-           "how": "What it does", "how_planned": "What it will do", "private_h": "Private like everything in Kopfwetter",
+           "how": "What it does", "how_planned": "What it will do", "shot_alt": "Screenshot: {} add-on with sample data", "private_h": "Private like everything in Kopfwetter",
            "private": "The entries of this add-on are encrypted on your device before they reach the server, too. Turning it off hides it; your entries are kept.",
            "steps_h": "How to turn it on",
            "steps": ["Sign in to Kopfwetter, in the browser or in the app.", "Open “History & more” and then “Add-ons”.", "Turn the add-on on. It then applies in the app and in the browser."],
@@ -451,6 +451,10 @@ def addon_html(slug: str, lang: str = "de", app_url: str = "/app") -> str:
     second = (f'<div><h2>{e(at["planned_h"])}</h2><p class="lead">{e(at["planned_text"])}</p></div>' if planned
               else f'<div><h2>{e(at["steps_h"])}</h2><ol class="addon-steps">{steps}</ol></div>')
     private = at["private_planned"] if planned else at["private"]
+    # Bildschirmfoto aus der Demo (nur fertige Add-ons): static/landing/addon-<name>-<sprache>.png
+    shot_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "landing", f"addon-{slug}-{lang}.png")
+    shot = (f'<figure class="phone addon-shot"><img src="/static/landing/addon-{slug}-{lang}.png" alt="{e(at["shot_alt"].format(a["name"]))}" '
+            f'width="390" loading="lazy"></figure>') if not planned and os.path.exists(shot_file) else ""
     imprint, privacy, _, _ = t["foot"]
     sw_lang, sw_label = t["switch"]
     foot = " · ".join([f'<a href="/impressum{q}">{e(imprint)}</a>', f'<a href="/datenschutz{q}">{e(privacy)}</a>',
@@ -484,9 +488,10 @@ def addon_html(slug: str, lang: str = "de", app_url: str = "/app") -> str:
   </div>
 </section>
 <section class="band alt">
-  <div class="band-in narrow">
-    <h2>{e(at["how_planned"] if planned else at["how"])}</h2>
-    <ul class="addon-points">{points}</ul>
+  <div class="band-in{" narrow" if not shot else " addon-how"}">
+    <div><h2>{e(at["how_planned"] if planned else at["how"])}</h2>
+    <ul class="addon-points">{points}</ul></div>
+    {shot}
   </div>
 </section>
 <section class="band">

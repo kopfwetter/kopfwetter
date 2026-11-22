@@ -104,3 +104,6 @@ body.site { padding: 0; }
 .badge-planned { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; vertical-align: middle; }
 .addon-list .card.planned { border-style: dashed; }
 .soon.big-soon { padding: 13px 20px; font-size: 1.02rem; border-radius: 12px; }
+.addon-how { max-width: 1000px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 300px); gap: 56px; align-items: start; }
+.addon-shot { max-width: 300px; justify-self: center; }
+@media (max-width: 760px) { .addon-how { grid-template-columns: 1fr; gap: 32px; } }
