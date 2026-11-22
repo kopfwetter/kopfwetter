@@ -45,7 +45,9 @@ ROADMAP = {
         ("doing", "Apps für Android und iOS", "Die Apps sind gebaut und werden für Google Play, F-Droid und den App Store vorbereitet."),
         ("next", "Entsperren per Fingerabdruck oder Face ID", "Schnell entsperren, ohne jedes Mal das Passwort einzugeben. Der Schlüssel bleibt im sicheren Speicher des Geräts."),
         ("next", "Erinnerungen", "Auf Wunsch eine leise Erinnerung an Check-in, Check-out und den nächsten Fragebogen, direkt auf dem Gerät."),
-        ("next", "Journal", "Längere Gedanken frei aufschreiben, unabhängig vom Tageseintrag und genauso verschlüsselt."),
+        ("next", "Add-on Journal", "Ausführlich über Gefühle und den Tag schreiben, mit Impulsen und Suche nur auf dem Gerät."),
+        ("next", "Add-on Teilen", "Ausgewählte Einträge über einen verschlüsselten Link mit zweitem Code für Psychiaterin oder Psychologen freigeben."),
+        ("next", "Post-Quanten-Kryptografie", "Hybride, quantensichere Verfahren überall dort, wo öffentliche Schlüssel im Spiel sind."),
     ],
     "en": [
         ("done", "Add-ons and crisis mode", "A simple core; feelings, questionnaires, medication, patterns and therapy can be turned on. A crisis mode for hard times."),
@@ -55,7 +57,9 @@ ROADMAP = {
         ("doing", "Apps for Android and iOS", "The apps are built and are being prepared for Google Play, F-Droid and the App Store."),
         ("next", "Unlock with fingerprint or Face ID", "Unlock quickly without typing your password every time. The key stays in the device's secure storage."),
         ("next", "Reminders", "If you like, a gentle reminder for check-in, check-out and the next questionnaire, right on your device."),
-        ("next", "Journal", "Write down longer thoughts freely, separate from the daily entry and encrypted just the same."),
+        ("next", "Journal add-on", "Write at length about feelings and your day, with prompts and search only on your device."),
+        ("next", "Share add-on", "Give your psychiatrist or psychologist access to selected entries through an encrypted link with a second code."),
+        ("next", "Post-quantum cryptography", "Hybrid, quantum-safe methods wherever public keys are involved."),
     ],
 }
 
@@ -189,7 +193,8 @@ def landing_html(lang: str = "de", app_url: str = "/app") -> str:
     day = "".join(f'<li><span class="step-n">{n}</span><div><h3>{e(h)}</h3><p>{e(p)}</p></div></li>' for n, (h, p) in enumerate(t["day"], 1))
     feat = "".join(f'<li class="card"><h3>{e(h)}</h3><p>{e(p)}</p></li>' for h, p in t["feat"])
     sec = "".join(f'<li><h3>{e(h)}</h3><p>{e(p)}</p></li>' for h, p in t["sec"])
-    addons = "".join(f'<li class="card"><h3>{e(a[lang]["name"])}</h3><p>{e(a[lang]["tagline"])}</p>'
+    badge = lambda a: f' <span class="badge-planned">{e(AT[lang]["planned"])}</span>' if a.get("planned") else ""
+    addons = "".join(f'<li class="card{" planned" if a.get("planned") else ""}"><h3>{e(a[lang]["name"])}{badge(a)}</h3><p>{e(a[lang]["tagline"])}</p>'
                      f'<p><a href="{e(addon_url(slug, lang))}">{e(t["more"])}</a></p></li>' for slug, a in ADDON_INFO.items())
     android_btns = store(play, t["play"]) + store(fdroid, t["fdroid"]) or f'<span class="soon">{e(t["soon"])}</span>'
     ios_btns = store(appstore, t["appstore"]) or f'<span class="soon">{e(t["soon"])}</span>'
@@ -362,17 +367,60 @@ ADDON_INFO = {
                           "PDF report with trends, check-ins and the data of your other add-ons",
                           "Any time range you like",
                           "The report is created in your browser; no data goes to the server"]}},
+    # Geplant (noch nicht in der App): Infoseite ohne „Einschalten“, mit Hinweis auf die Roadmap
+    "journal": {"k": "journal", "planned": True,
+        "de": {"name": "Journal", "tagline": "Ausführlich schreiben, was dich bewegt.",
+               "lead": "Ein Tagebuch für das, was Skalen nicht zeigen: wie der Tag war, was dich beschäftigt, was schwer war und was trotzdem ging. Nur du kannst es lesen.",
+               "points": ["Beliebig viele Einträge pro Tag, mit einfacher Formatierung",
+                          "Schreibimpulse für Tage, an denen der Anfang schwerfällt, zum Übernehmen oder Wegtippen",
+                          "Verknüpft mit Check-in und Gefühlen des Tages",
+                          "Suche nur auf deinem Gerät, der Server bekommt keinen Suchindex",
+                          "Entwürfe werden laufend verschlüsselt zwischengespeichert, auch ohne Netz",
+                          "Einträge lassen sich als „nur für mich“ markieren und werden dann nie geteilt"]},
+        "en": {"name": "Journal", "tagline": "Write at length about what moves you.",
+               "lead": "A diary for what scales don't show: how your day was, what is on your mind, what was hard and what still worked. Only you can read it.",
+               "points": ["As many entries per day as you like, with simple formatting",
+                          "Writing prompts for days when starting is hard, to use or dismiss",
+                          "Linked to that day's check-in and feelings",
+                          "Search runs only on your device; the server gets no search index",
+                          "Drafts are saved encrypted as you type, even offline",
+                          "Entries can be marked “only for me” and are then never shared"]}},
+    "teilen": {"k": "share", "planned": True,
+        "de": {"name": "Teilen", "tagline": "Sicher zeigen, wie es dir ging.",
+               "lead": "Gib deiner Psychiaterin oder deinem Psychologen ausgewählte Einträge über einen verschlüsselten Link frei. Sie brauchen kein Konto, und der Server kann nicht mitlesen.",
+               "points": ["Du wählst Zeitraum und Inhalte, zum Beispiel Check-ins, Journal und Fragebögen",
+                          "Der Schlüssel ist zweigeteilt: ein Teil im Link, der andere als kurzer Code, den du mündlich weitergibst",
+                          "Wer nur den Link abfängt, kann nichts lesen",
+                          "Jeder Link läuft ab, lässt sich nur begrenzt oft öffnen und jederzeit widerrufen",
+                          "Du siehst, wann ein Link geöffnet wurde",
+                          "Ausgelegt auf Post-Quanten-Sicherheit: der Link kommt ohne angreifbare Public-Key-Verfahren aus, dauerhafte Freigaben an eine Praxis werden hybrid quantensicher"]},
+        "en": {"name": "Share", "tagline": "Safely show how you have been.",
+               "lead": "Give your psychiatrist or psychologist access to selected entries through an encrypted link. They need no account, and the server cannot read along.",
+               "points": ["You choose the time range and content, for example check-ins, journal and questionnaires",
+                          "The key is split in two: one part in the link, the other as a short code you pass on in person",
+                          "Anyone who only intercepts the link cannot read anything",
+                          "Every link expires, can only be opened a limited number of times and can be revoked at any time",
+                          "You see when a link was opened",
+                          "Designed for post-quantum security: the link needs no vulnerable public-key methods, and long-term shares with a practice use hybrid quantum-safe encryption"]}},
 }
 
 AT = {
-    "de": {"eyebrow": "Add-on für Kopfwetter", "on": "In Kopfwetter einschalten", "back": "Zu Kopfwetter",
-           "how": "Was es kann", "private_h": "Privat wie alles in Kopfwetter",
+    "de": {"planned_eyebrow": "Geplantes Add-on für Kopfwetter", "planned": "In Planung", "roadmap": "Zur Roadmap",
+           "planned_h": "Wann es kommt",
+           "planned_text": "Dieses Add-on ist in Planung und noch nicht in der App. Den Stand siehst du in der Roadmap. Sobald es fertig ist, schaltest du es wie alle Add-ons unter „Verlauf & mehr“ → „Add-ons“ ein.",
+           "private_planned": "Auch die Einträge dieses Add-ons werden auf deinem Gerät verschlüsselt, bevor sie den Server erreichen. Ausgeschaltet bleiben sie erhalten.",
+"eyebrow": "Add-on für Kopfwetter", "on": "In Kopfwetter einschalten", "back": "Zu Kopfwetter",
+           "how": "Was es kann", "how_planned": "Was es können soll", "private_h": "Privat wie alles in Kopfwetter",
            "private": "Auch die Einträge dieses Add-ons werden auf deinem Gerät verschlüsselt, bevor sie den Server erreichen. Ausschalten blendet es aus, die Einträge bleiben erhalten.",
            "steps_h": "So schaltest du es ein",
            "steps": ["Melde dich in Kopfwetter an, im Browser oder in der App.", "Öffne „Verlauf & mehr“ und dort „Add-ons“.", "Schalte das Add-on ein. Es gilt dann in der App und im Browser."],
            "others": "Weitere Add-ons"},
-    "en": {"eyebrow": "Add-on for Kopfwetter", "on": "Turn on in Kopfwetter", "back": "To Kopfwetter",
-           "how": "What it does", "private_h": "Private like everything in Kopfwetter",
+    "en": {"planned_eyebrow": "Planned add-on for Kopfwetter", "planned": "In planning", "roadmap": "See the roadmap",
+           "planned_h": "When it is coming",
+           "planned_text": "This add-on is being planned and is not yet in the app. You can follow its progress on the roadmap. Once it is ready, you turn it on like any add-on under “History & more” → “Add-ons”.",
+           "private_planned": "The entries of this add-on will also be encrypted on your device before they reach the server. If you turn it off, they are kept.",
+           "eyebrow": "Add-on for Kopfwetter", "on": "Turn on in Kopfwetter", "back": "To Kopfwetter",
+           "how": "What it does", "how_planned": "What it will do", "private_h": "Private like everything in Kopfwetter",
            "private": "The entries of this add-on are encrypted on your device before they reach the server, too. Turning it off hides it; your entries are kept.",
            "steps_h": "How to turn it on",
            "steps": ["Sign in to Kopfwetter, in the browser or in the app.", "Open “History & more” and then “Add-ons”.", "Turn the add-on on. It then applies in the app and in the browser."],
@@ -396,6 +444,13 @@ def addon_html(slug: str, lang: str = "de", app_url: str = "/app") -> str:
     points = "".join(f"<li>{e(p)}</li>" for p in a["points"])
     steps = "".join(f"<li>{e(p)}</li>" for p in at["steps"])
     others = " · ".join(f'<a href="{e(addon_url(s, lang))}">{e(x[lang]["name"])}</a>' for s, x in ADDON_INFO.items() if s != slug)
+    planned = ADDON_INFO[slug].get("planned", False)
+    eyebrow = at["planned_eyebrow"] if planned else at["eyebrow"]
+    cta = (f'<span class="soon big-soon">{e(at["planned"])}</span> <a class="btn big" href="{e(site)}#roadmap">{e(at["roadmap"])}</a>' if planned
+           else f'<a class="btn primary big" href="{on_url}">{e(at["on"])}</a> <a class="btn big" href="{e(site)}">{e(at["back"])}</a>')
+    second = (f'<div><h2>{e(at["planned_h"])}</h2><p class="lead">{e(at["planned_text"])}</p></div>' if planned
+              else f'<div><h2>{e(at["steps_h"])}</h2><ol class="addon-steps">{steps}</ol></div>')
+    private = at["private_planned"] if planned else at["private"]
     imprint, privacy, _, _ = t["foot"]
     sw_lang, sw_label = t["switch"]
     foot = " · ".join([f'<a href="/impressum{q}">{e(imprint)}</a>', f'<a href="/datenschutz{q}">{e(privacy)}</a>',
@@ -422,22 +477,22 @@ def addon_html(slug: str, lang: str = "de", app_url: str = "/app") -> str:
 <main>
 <section class="band addon-hero">
   <div class="band-in narrow">
-    <p class="hero-eyebrow">{e(at["eyebrow"])} · {e(a["name"])}</p>
+    <p class="hero-eyebrow">{e(eyebrow)} · {e(a["name"])}</p>
     <h1 class="hero-title">{e(a["tagline"])}</h1>
     <p class="lead">{e(a["lead"])}</p>
-    <p class="cta"><a class="btn primary big" href="{on_url}">{e(at["on"])}</a> <a class="btn big" href="{e(site)}">{e(at["back"])}</a></p>
+    <p class="cta">{cta}</p>
   </div>
 </section>
 <section class="band alt">
   <div class="band-in narrow">
-    <h2>{e(at["how"])}</h2>
+    <h2>{e(at["how_planned"] if planned else at["how"])}</h2>
     <ul class="addon-points">{points}</ul>
   </div>
 </section>
 <section class="band">
   <div class="band-in narrow split-2">
-    <div><h2>{e(at["private_h"])}</h2><p class="lead">{e(at["private"])}</p></div>
-    <div><h2>{e(at["steps_h"])}</h2><ol class="addon-steps">{steps}</ol></div>
+    <div><h2>{e(at["private_h"])}</h2><p class="lead">{e(private)}</p></div>
+    {second}
   </div>
 </section>
 <section class="band alt">

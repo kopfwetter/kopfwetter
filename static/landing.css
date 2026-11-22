@@ -101,3 +101,6 @@ body.site { padding: 0; }
 .split-2 h2 { font-size: clamp(1.3rem, 2vw, 1.6rem); }
 @media (max-width: 720px) { .split-2 { grid-template-columns: 1fr; gap: 28px; } }
 .site-nav .btn.push { margin-left: auto; }
+.badge-planned { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; vertical-align: middle; }
+.addon-list .card.planned { border-style: dashed; }
+.soon.big-soon { padding: 13px 20px; font-size: 1.02rem; border-radius: 12px; }

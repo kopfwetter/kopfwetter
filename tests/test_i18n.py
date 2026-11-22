@@ -139,7 +139,8 @@ print(json.dumps({"path": [p.status_code, "Questionnaires" in p.text, "addon=fra
   "sub": [s.status_code, "Gefühle" in s.text, 'href="https://web.kopfwetter.test/?addon=gefuehle"' in s.text],
   "unknown_sub_is_landing": "Roadmap" in x.get("/").text, "missing": c.get("/addon/nix").status_code,
   "landing_links": "https://tabletten.kopfwetter.test/" in c.get("/").text,
-  "domain": c.get("/api/auth/state").json()["links"]["addonDomain"]}))
+  "domain": c.get("/api/auth/state").json()["links"]["addonDomain"],
+  "planned": [("In Planung" in (j := c.get("/addon/journal").text)), "addon=journal" not in j, "Share" in c.get("/addon/teilen?lang=en").text]}))
 '''
     e = {**os.environ, "ROOT": ROOT, "APP_SECRET": secrets.token_hex(32), "COOKIE_SECURE": "0", "DB_PATH": db,
          "WEB_URL": "https://web.kopfwetter.test", "ADDON_DOMAIN": "kopfwetter.test"}
@@ -147,4 +148,4 @@ print(json.dumps({"path": [p.status_code, "Questionnaires" in p.text, "addon=fra
     assert p.returncode == 0, p.stderr
     o = json.loads(p.stdout.strip().splitlines()[-1])
     assert o == {"path": [200, True, True], "sub": [200, True, True], "unknown_sub_is_landing": True, "missing": 404,
-                 "landing_links": True, "domain": "kopfwetter.test"}
+                 "landing_links": True, "domain": "kopfwetter.test", "planned": [True, True, True]}

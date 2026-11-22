@@ -143,6 +143,8 @@ Krisenplan und Krisenmodus, Export. Alles Weitere schaltet man unter **„Verlau
 | Tabletten | `tabletten.kopfwetter.app` | Medikamente, Einnahmen, Tagesüberblick im Check-out, CSV |
 | Muster | `muster.kopfwetter.app` | Jahresübersicht, Wochentage, Aktivitäten |
 | Therapie | `therapie.kopfwetter.app` | Notizen für die Sitzung, PDF-Bericht |
+| Journal (geplant) | `journal.kopfwetter.app` | ausführliche Tagebucheinträge, Impulse, Suche auf dem Gerät |
+| Teilen (geplant) | `teilen.kopfwetter.app` | verschlüsselter Link mit zweitem Code für Behandelnde, PQC-fähig |
 
 - **Gespeichert** wird die Auswahl verschlüsselt im Datensatz `prefs`; sie gilt damit in der App und im Browser.
 - **Neue Konten:** alle Add-ons aus. Konten von vor den Add-ons: an, was schon Daten hat.
@@ -150,7 +152,7 @@ Krisenplan und Krisenmodus, Export. Alles Weitere schaltet man unter **„Verlau
 - **Infoseiten:** `ADDON_DOMAIN=kopfwetter.app` setzen und im Cloudflare-Tunnel die fünf Hostnamen auf denselben Dienst
   zeigen lassen. Ohne `ADDON_DOMAIN` liegen sie unter `/addon/<name>`. „In Kopfwetter einschalten“ führt zu
   `WEB_URL/?addon=<name>`: Nach der Anmeldung öffnen sich die Add-on-Einstellungen mit dem Add-on hervorgehoben.
-- Texte der Infoseiten stehen in `landing.py` (`ADDON_INFO`).
+- Texte der Infoseiten stehen in `landing.py` (`ADDON_INFO`). Geplante Add-ons (`"planned": True`) haben eine Infoseite ohne „Einschalten“, mit Hinweis auf die Roadmap; im Cloudflare-Tunnel brauchen auch `journal.` und `teilen.` einen Hostnamen.
 
 ## Krisenmodus
 
