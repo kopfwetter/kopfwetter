@@ -1,0 +1,21 @@
+# Tests für Server und Kryptografie bei jedem Push und Merge Request
+stages: [test]
+
+secrets:
+  stage: test
+  image: { name: zricethezav/gitleaks:latest, entrypoint: [""] }
+  script: [gitleaks detect --source . --config .gitleaks.toml -v --no-banner]
+
+server:
+  stage: test
+  image: python:3.12-slim
+  script:
+    - pip install -q -r requirements.txt pytest httpx
+    - python -m pytest -q tests
+
+crypto-vectors:
+  stage: test
+  image: node:22-slim
+  script:
+    - cd mobile && npm ci --ignore-scripts --no-audit --no-fund && cd ..
+    - node tests/vectors/check.mjs

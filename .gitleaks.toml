@@ -1,0 +1,11 @@
+# Ergänzt die Standardregeln von gitleaks um bekannte Fehlalarme.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Testvektoren und bekannte Fehlalarme"
+# Feste Testvektoren sind absichtlich öffentlich
+paths = ['''tests/vectors/vectors\.json''', '''tests/vectors/generate\.py''']
+# generic-api-key hält das Cookie-Argument in app.py (set_cookie(COOKIE, token, max_age=hours * 3600, …)) für ein Geheimnis
+regexTarget = "secret"
+regexes = ['''^max_age=hours$''']

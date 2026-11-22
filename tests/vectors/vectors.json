@@ -1,0 +1,51 @@
+{
+  "version": 2,
+  "kdf": {
+    "password": "Kopfwetter: heiter bis wolkig – Ä",
+    "salt": "AAECAwQFBgcICQoLDA0ODw==",
+    "alg": "argon2id",
+    "m": 65536,
+    "t": 3,
+    "p": 1,
+    "master_hex": "ff575e805e621962ca588d43d9d29fcada0c4573f53ab0bf4dc9e33fc08f04ea",
+    "authKey": "+tswdPWahBFgsWBW+uKqUGiij+fno5eA8CxDhmsGDsA=",
+    "kek_hex": "2bff94cfd6d5e1889399f686a173848e31b5666835df1d883f040ec6d7a88efa"
+  },
+  "kdf_v1": {
+    "alg": "pbkdf2-sha256",
+    "i": 600000,
+    "master_hex": "0f8143660440cab590001148a458618093e2c31eeec7449f18c5ea7d3d65b650",
+    "authKey": "nLcanPMqaDi+EbQtY+gQt4dIlcYgkTwE6wTgETLGvsQ="
+  },
+  "dek": {
+    "dek_hex": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+    "aad": "kopfwetter-app/dek/v1",
+    "wrappedKey": {
+      "iv": "oKGio6Slpqeoqaqr",
+      "ct": "kTGF2n0/fW/PUWERD0oeEMFtnyxhCnalpmJMT52ThMyhJlr805OfEJE1xoUGkMJD"
+    }
+  },
+  "recovery": {
+    "raw_hex": "505152535455565758595a5b5c5d5e5f60616263",
+    "key": "LBJX-EW4W-LXMF-QYC3-MKPX-2ZL8-M7SG-C2VD",
+    "authKey": "6cEYYFP02tvPYTD2vXp8ZxDMqjOuOM1LDVFRUXgmLrk=",
+    "kek_hex": "643d73cd5b290356bc4a6da4ffde47e214fa986da5c26f00b3660b72441d406d",
+    "recoveryWrapped": {
+      "iv": "sLGys7S1tre4ubq7",
+      "ct": "85Kl4k1cu0dBrA22dioSMDH4XngJ6lCzstkrlQMJr6Dm20VZj/OYtTeGxPOjwuhn"
+    }
+  },
+  "record": {
+    "kind": "entry",
+    "key": "2026-11-04",
+    "idKey_hex": "4c55d934caa3e7fe7e8a055dc498d87252c0d86622ca656ef9ab76482ebc1028",
+    "id": "8e8d95d9e80aa15b1a7d27f4b384ce1b",
+    "plaintext_len": 256,
+    "body": "{\"k\":\"entry\",\"key\":\"2026-11-04\",\"d\":{\"mood\":3,\"note\":\"Spaziergang\"}}",
+    "aad": "kopfwetter-app/record/v1:8e8d95d9e80aa15b1a7d27f4b384ce1b",
+    "sealed": {
+      "iv": "wMHCw8TFxsfIycrL",
+      "ct": "EbFS07lNLoUOVyeZBf+oafhuuPIul2RbVH4xjMWFixijqHBykVxOOZD1HM7s06WG9g1MFXDYPwVEQO+cdG7KTw9nn/HcM7gEjQUxBz7xdDcT3gezdx2oP5VjYnkEONbT/E+egSyfaSaKho8H1hckYy4jB1M/zicyZe8VvVhx+AKWa7JDnrMIDdM2hP9LjRUi3ZkSZtRDTAN8aYjbGR+l4FMLTrLy0ybcAeAfFXnvu5Dxilt+LebxvjuSaQlzp8cqZKKuKGOQNkPiRF9sxP0PYLsiZb7jHbilmhL/73TaN4p5GRZcRlhAhbrQ2RjIMR5apzIjE1lToCGwOHrrlEfEiNcQbVSVn/PvG23v15pc4iA="
+    }
+  }
+}

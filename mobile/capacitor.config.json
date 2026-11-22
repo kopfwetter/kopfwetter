@@ -1,0 +1,22 @@
+{
+  "appId": "app.kopfwetter",
+  "appName": "Kopfwetter",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "never",
+    "limitsNavigationsToAppBoundDomains": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 600,
+      "launchAutoHide": true,
+      "backgroundColor": "#eef1f5",
+      "showSpinner": false
+    },
+    "CapacitorHttp": { "enabled": false }
+  }
+}

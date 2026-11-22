@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Kopfwetter</title>
+<link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#3f5e8c">
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/vendor/argon2.umd.min.js" defer></script>
+<script src="/static/i18n.js" defer></script>
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<!-- Startseite (vor der Anmeldung): Kopfbereich wie das LinkedIn-Titelbild -->
+<header class="hero" id="hero" hidden>
+  <div class="hero-in">
+    <div class="heat-hero" id="hero-heat" aria-hidden="true"></div>
+    <div class="hero-text">
+      <p class="hero-eyebrow">Open Source · Ende-zu-Ende-verschlüsselt</p>
+      <h1 class="hero-title">Ein Stimmungstagebuch, das nur du lesen kannst.</h1>
+      <p class="hero-brand"><img src="/static/icons/icon.svg" alt="" width="40" height="40"><span>Kopfwetter</span></p>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <header class="top">
+    <div class="titles">
+      <h1>Kopfwetter</h1>
+      <p class="sub">Dein Stimmungstagebuch. Ein paar Minuten am Tag, ehrlich, nicht perfekt.</p>
+    </div>
+    <div class="who" id="who-wrap" hidden><span class="small" id="who"></span><button class="btn crisis-btn" id="open-plan" type="button">Krisenplan</button><button class="btn" id="logout" type="button">Abmelden</button></div>
+  </header>
+  <div class="status" id="status" role="status">Lade …</div>
+
+  <!-- Registrierung -->
+  <section class="card narrow" id="view-register" hidden aria-labelledby="regTitle">
+    <h2 id="regTitle">Konto erstellen</h2>
+
+    <form class="form" id="reg-1" autocomplete="off">
+      <p class="hint" id="reg-first" hidden>Das ist das erste Konto auf diesem Server. Es wird Admin und braucht den Einrichtungscode (SETUP_TOKEN aus der .env).</p>
+      <p class="hint" id="reg-approval" hidden>Neue Konten werden erst nach einer Freigabe freigeschaltet.</p>
+      <p class="small">Dein Passwort verschlüsselt alle Einträge direkt im Browser. Es lässt sich <strong>nicht zurücksetzen</strong>, auch nicht von der Person, die diese Seite betreibt. Wer das Passwort vergisst, verliert die Einträge. Bewahre es in einem Passwortmanager auf.</p>
+      <div class="form" id="reg-token-wrap" hidden>
+        <label class="fl" for="r-token">Einrichtungscode</label>
+        <input id="r-token" type="password" autocomplete="off">
+      </div>
+      <label class="fl" for="r-user">Benutzername <span class="small">(3–32 Zeichen: a–z, 0–9, . _ -)</span></label>
+      <input id="r-user" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="32" required>
+      <label class="fl" for="r-pw">Passwort <span class="small">(mindestens 12 Zeichen, gern ein Satz)</span></label>
+      <input id="r-pw" type="password" autocomplete="new-password" minlength="12" required>
+      <label class="fl" for="r-pw2">Passwort wiederholen</label>
+      <input id="r-pw2" type="password" autocomplete="new-password" minlength="12" required>
+      <label class="check consent"><input type="checkbox" id="r-consent" required>
+        <span>Ich willige ausdrücklich ein, dass meine Angaben zu meiner Gesundheit (Tagebucheinträge, Medikamente, Notizen, Krisenplan und Antworten in den Selbsttests PHQ-9 und GAD-7) Ende-zu-Ende verschlüsselt gespeichert werden (Art. 9 Abs. 2 lit. a DSGVO). Ich kann die Einwilligung jederzeit widerrufen, indem ich mein Konto lösche. Details stehen in der <a href="/datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a>.</span></label>
+      <div class="actions"><button class="btn primary" id="r-go" type="submit">Weiter</button><span class="msg" id="reg-msg" role="alert"></span></div>
+      <p class="small" id="reg-login-link">Schon ein Konto? <button type="button" class="link" id="to-login">Anmelden</button></p>
+      <p class="demo-hint" data-demo-link hidden>Erst einmal ansehen? <a class="demo-url" href="#">Demo ohne Anmeldung öffnen</a></p>
+    </form>
+
+    <form class="form" id="reg-2" hidden autocomplete="off">
+      <p><strong>Zweiter Faktor.</strong> Scanne den QR-Code mit einer Authenticator-App, zum Beispiel Aegis, 2FAS, Google Authenticator oder deinem Passwortmanager.</p>
+      <img class="qr" id="qr" alt="QR-Code für die Authenticator-App" width="220" height="220">
+      <p class="small">Ohne Kamera: Schlüssel manuell eingeben<br><code id="totp-secret" class="secret"></code></p>
+      <label class="fl" for="r-code">6-stelliger Code aus der App</label>
+      <input id="r-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required>
+      <div class="actions"><button class="btn primary" id="r-confirm" type="submit">Bestätigen</button><span class="msg" id="reg-msg2" role="alert"></span></div>
+    </form>
+
+    <div class="form" id="reg-3" hidden>
+      <p><strong>Wiederherstellungscodes.</strong> Jeder Code ersetzt einmal den Code aus der App, falls du dein Handy verlierst. Speichere sie jetzt sicher ab, sie werden nur dieses eine Mal angezeigt.</p>
+      <pre class="codes" id="recovery"></pre>
+      <div class="actions">
+        <button class="btn" id="copy-codes" type="button">Codes kopieren</button>
+        <button class="btn primary" id="recovery-done" type="button">Ich habe die Codes gespeichert</button>
+      </div>
+    </div>
+
+    <div class="form" id="reg-4" hidden>
+      <p><strong>Fast geschafft.</strong> Dein Konto <span id="reg-name"></span> ist angelegt und wartet auf Freigabe. Danach meldest du dich mit Benutzername, Passwort und dem Code aus der App an.</p>
+      <div class="actions"><button class="btn primary" id="to-login2" type="button">Zur Anmeldung</button></div>
+    </div>
+  </section>
+
+  <!-- Anmeldung -->
+  <section class="card narrow" id="view-login" hidden aria-labelledby="loginTitle">
+    <h2 id="loginTitle">Anmelden</h2>
+    <form class="form" id="login-form">
+      <label class="fl" for="l-user">Benutzername</label>
+      <input id="l-user" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="32" required>
+      <label class="fl" for="l-pw">Passwort</label>
+      <input id="l-pw" type="password" autocomplete="current-password" required>
+      <label class="fl" for="l-code">Code aus der Authenticator-App <span class="small">oder Wiederherstellungscode</span></label>
+      <input id="l-code" type="text" autocomplete="one-time-code" maxlength="12" required>
+      <div class="actions"><button class="btn primary" id="l-go" type="submit">Anmelden</button><span class="msg" id="login-msg" role="alert"></span></div>
+      <p class="small"><button type="button" class="link" id="to-recover">Passwort vergessen?</button></p>
+      <p class="small" id="reg-link" hidden>Noch kein Konto? <button type="button" class="link" id="to-register">Konto erstellen</button></p>
+    </form>
+    <p class="demo-hint" data-demo-link hidden>Erst einmal ansehen? <a class="demo-url" href="#">Demo ohne Anmeldung öffnen</a></p>
+  </section>
+
+  <!-- Einwilligung aktualisiert -->
+  <section class="card narrow" id="view-consent" hidden aria-labelledby="consentTitle">
+    <h2 id="consentTitle">Einwilligung aktualisiert</h2>
+    <p>Die Datenschutzerklärung wurde ergänzt: Neu sind der Krisenplan, Notizen für die nächste Sitzung und der Angst-Selbsttest (GAD-7). Damit weiterhin Einträge und Testergebnisse gespeichert werden dürfen, brauchen wir deine Einwilligung zur neuen Fassung.</p>
+    <form class="form" id="consent-form">
+      <label class="check consent"><input type="checkbox" id="c-consent" required>
+        <span>Ich willige ausdrücklich ein, dass meine Angaben zu meiner Gesundheit (Tagebucheinträge, Medikamente, Notizen, Krisenplan und Antworten in den Selbsttests PHQ-9 und GAD-7) Ende-zu-Ende verschlüsselt gespeichert werden (Art. 9 Abs. 2 lit. a DSGVO). Ich kann die Einwilligung jederzeit widerrufen, indem ich mein Konto lösche. Details stehen in der <a href="/datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a>.</span></label>
+      <div class="actions">
+        <button class="btn primary" id="c-go" type="submit">Zustimmen und weiter</button>
+        <button class="btn" id="c-readonly" type="button">Nur ansehen</button>
+        <span class="msg" id="consent-msg" role="alert"></span>
+      </div>
+      <p class="small">Ohne Einwilligung können keine neuen Einträge gespeichert werden. Mit „Nur ansehen“ kannst du deine bisherigen Daten lesen, herunterladen oder dein Konto löschen.</p>
+    </form>
+  </section>
+
+  <!-- Passwort vergessen -->
+  <section class="card narrow" id="view-recover" hidden aria-labelledby="recoverTitle">
+    <h2 id="recoverTitle">Passwort vergessen</h2>
+    <form class="form" id="recover-form" autocomplete="off">
+      <p class="small">Mit deinem <strong>Wiederherstellungsschlüssel</strong> setzt du ein neues Passwort. Deine Einträge bleiben erhalten. Ohne diesen Schlüssel lassen sie sich nicht wiederherstellen, auch nicht von der Person, die diese Seite betreibt.</p>
+      <label class="fl" for="rc-user">Benutzername</label>
+      <input id="rc-user" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="32" required>
+      <label class="fl" for="rc-key">Wiederherstellungsschlüssel <span class="small">(32 Zeichen, z. B. ABCD-EFGH-…)</span></label>
+      <input id="rc-key" class="mono" type="text" autocapitalize="characters" spellcheck="false" maxlength="48" required>
+      <label class="fl" for="rc-code">Code aus der Authenticator-App <span class="small">oder einer der zehn Wiederherstellungscodes</span></label>
+      <input id="rc-code" type="text" autocomplete="one-time-code" maxlength="12" required>
+      <label class="fl" for="rc-pw">Neues Passwort <span class="small">(mindestens 12 Zeichen)</span></label>
+      <input id="rc-pw" type="password" autocomplete="new-password" minlength="12" required>
+      <label class="fl" for="rc-pw2">Neues Passwort wiederholen</label>
+      <input id="rc-pw2" type="password" autocomplete="new-password" minlength="12" required>
+      <div class="actions"><button class="btn primary" id="rc-go" type="submit">Neues Passwort setzen</button><span class="msg" id="rc-msg" role="alert"></span></div>
+      <p class="small"><button type="button" class="link" id="rc-back">Zurück zur Anmeldung</button></p>
+    </form>
+  </section>
+
+  <!-- Gesperrt -->
+  <section class="card narrow" id="view-lock" hidden aria-labelledby="lockTitle">
+    <h2 id="lockTitle">Gesperrt</h2>
+    <p class="small">Kopfwetter wurde gesperrt, damit niemand an einem unbeaufsichtigten Gerät mitliest. Du bist als <strong id="lock-user"></strong> angemeldet. Zum Entsperren reicht dein Passwort.</p>
+    <form class="form" id="lock-form" autocomplete="off">
+      <label class="fl" for="lock-pw">Passwort</label>
+      <input id="lock-pw" type="password" autocomplete="current-password" required>
+      <div class="actions"><button class="btn primary" id="lock-go" type="submit">Entsperren</button><span class="msg" id="lock-msg" role="alert"></span></div>
+      <p class="small"><button type="button" class="link" id="lock-logout">Abmelden</button></p>
+    </form>
+  </section>
+
+  <!-- Demo -->
+  <section class="card narrow" id="view-demo" hidden aria-labelledby="demoTitle">
+    <h2 id="demoTitle">Kopfwetter ausprobieren</h2>
+    <p>Du bekommst ein eigenes Demo-Konto mit Beispieldaten aus vier Wochen: Einträge, Verlauf, Muster, PHQ-9, GAD-7, Tabletten, Krisenplan und PDF-Bericht. Eine Anmeldung brauchst du nicht.</p>
+    <p class="small">Niemand sonst sieht dein Demo-Konto. Es wird nach <span id="demo-hours">24</span> Stunden automatisch gelöscht, oder sofort, wenn du „Demo beenden“ wählst. Die Verschlüsselung funktioniert wie in der echten App, Zwei-Faktor-Anmeldung und Passwort entfallen.</p>
+    <form class="form" id="demo-form">
+      <label class="check consent"><input type="checkbox" id="demo-consent" required>
+        <span>Ich gebe in der Demo <strong>keine echten Gesundheitsdaten</strong> ein.</span></label>
+      <div class="actions"><button class="btn primary" id="demo-go" type="submit">Demo starten</button><span class="msg" id="demo-msg" role="alert"></span></div>
+    </form>
+    <p class="demo-hint" id="app-link" hidden>Gefällt dir? <a id="app-url" href="#">Zur echten App mit eigenem, geschütztem Konto</a></p>
+  </section>
+
+  <!-- App -->
+  <div class="stack" id="view-app" hidden>
+    <section class="card notice demo-only" id="demo-banner" aria-labelledby="demoBannerTitle">
+      <h2 id="demoBannerTitle">Demo</h2>
+      <p class="small">Das ist ein Demo-Konto mit erfundenen Beispieldaten. Es wird spätestens <span id="demo-until"></span> gelöscht. Bitte gib keine echten Daten ein.</p>
+      <div class="actions"><button class="btn" id="demo-end" type="button">Demo beenden und Daten löschen</button></div>
+    </section>
+    <section class="card notice no-demo" id="rk-banner" hidden aria-labelledby="rkBannerTitle">
+      <h2 id="rkBannerTitle">Schütze dein Tagebuch vor Passwortverlust</h2>
+      <p>Wenn du dein Passwort vergisst, kann niemand deine Einträge wiederherstellen. Mit einem Wiederherstellungsschlüssel zum Ausdrucken oder Abspeichern kannst du in diesem Fall ein neues Passwort setzen.</p>
+      <div class="actions"><button class="btn primary" id="rk-banner-go" type="button">Schlüssel erstellen</button><button class="btn" id="rk-banner-later" type="button">Später</button></div>
+    </section>
+    <div class="tabs" role="tablist" aria-label="Bereiche">
+      <button class="tab" id="tab-today" role="tab" type="button" aria-selected="true" aria-controls="pane-today">Heute</button>
+      <button class="tab" id="tab-more" role="tab" type="button" aria-selected="false" aria-controls="pane-more">Verlauf &amp; mehr</button>
+    </div>
+    <p class="crisis-switch" id="crisis-switch" hidden><button class="link" id="crisis-on" type="button">Schwere Phase? Krisenmodus einschalten</button> <span class="small">Zeigt nur noch das Nötigste und Hilfe.</span></p>
+    <div class="stack" id="pane-crisis" hidden>
+      <section class="card crisis-head" aria-labelledby="cmTitle">
+        <div class="fhead"><h2 id="cmTitle">Krisenmodus</h2><button class="btn" id="crisis-off" type="button">Krisenmodus beenden</button></div>
+        <p>Heute zählt nur das Nötigste. Alles andere wartet und ist nicht verloren.</p>
+        <button class="btn help-now" id="danger-open" type="button">Ich bin in Gefahr</button>
+        <span class="msg" id="cm-msg" role="status"></span>
+      </section>
+      <section class="card" id="help-card" aria-labelledby="helpTitle">
+        <h2 id="helpTitle">Hilfe</h2>
+        <div class="stack help-body" id="help-body"></div>
+      </section>
+      <section class="card" id="cm-mood-card" aria-labelledby="cmMoodTitle">
+        <h2 id="cmMoodTitle">Wie geht’s gerade?</h2>
+        <div class="cm-mood" id="cm-mood" role="group" aria-labelledby="cmMoodTitle"></div>
+        <p class="hint" id="cmLowHint" hidden>Das klingt sehr schwer. Du musst das nicht allein tragen. Oben unter „Hilfe“ stehen Menschen und Nummern, die du jetzt erreichen kannst.</p>
+        <details id="cm-more">
+          <summary>Angst und Antrieb (wenn du magst)</summary>
+          <div class="field">
+            <div class="fhead"><span class="fl">Angst</span><span class="fval" id="v-cm-anx">–</span></div>
+            <div class="seg k-anx" id="s-cm-anx" role="group" aria-label="Angst 1 bis 10"></div>
+            <div class="ends"><span>1 keine</span><span>10 sehr stark</span></div>
+          </div>
+          <div class="field">
+            <div class="fhead"><span class="fl">Antrieb</span><span class="fval" id="v-cm-drive">–</span></div>
+            <div class="seg k-drive" id="s-cm-drive" role="group" aria-label="Antrieb 1 bis 10"></div>
+            <div class="ends"><span>1 kaum</span><span>10 viel</span></div>
+          </div>
+        </details>
+        <span class="msg" id="cm-mood-msg" role="status"></span>
+      </section>
+      <section class="card" id="steps-card" aria-labelledby="stepsTitle">
+        <div class="fhead"><h2 id="stepsTitle">Ein kleiner Schritt</h2><span class="small" id="steps-count"></span></div>
+        <p class="small">Nichts davon muss sein. Jeder Haken zählt.</p>
+        <div class="cm-steps" id="cm-steps" role="group" aria-labelledby="stepsTitle"></div>
+        <span class="msg" id="steps-msg" role="status"></span>
+      </section>
+    </div>
+    <section class="card plan" id="plan-card" hidden aria-labelledby="planTitle">
+      <div class="fhead"><h2 id="planTitle">Mein Krisenplan</h2><button class="btn" id="plan-close" type="button">Schließen</button></div>
+
+      <div class="stack" id="plan-empty" hidden>
+        <p>Ein Krisenplan hilft, wenn es dir so schlecht geht, dass klares Denken schwerfällt. Du schreibst in ruhigen Zeiten auf, woran du eine Krise erkennst, was dir dann hilft und wen du anrufen kannst.</p>
+        <p class="small">Am besten erstellst oder besprichst du ihn mit deiner Therapeutin oder deinem Therapeuten. Er wird wie alles andere Ende-zu-Ende verschlüsselt gespeichert.</p>
+        <div class="actions"><button class="btn primary" id="plan-start" type="button">Krisenplan erstellen</button></div>
+      </div>
+
+      <div class="stack" id="plan-view" hidden></div>
+
+      <form class="form" id="plan-form" hidden></form>
+
+      <div class="actions" id="plan-actions" hidden>
+        <button class="btn" id="plan-edit" type="button">Bearbeiten</button>
+        <button class="btn" id="plan-pdf" type="button">Als PDF speichern</button>
+        <span class="msg" id="plan-msg" role="status"></span>
+      </div>
+    </section>
+    <div class="stack" id="pane-today" role="tabpanel" aria-labelledby="tab-today">
+      <section class="card daycard" aria-labelledby="dayTitle">
+        <div class="daybar">
+          <button class="iconbtn" id="prevDay" type="button" aria-label="Vorheriger Tag">‹</button>
+          <div class="day" id="dayTitle">Heute</div>
+          <input type="date" id="datePick" aria-label="Datum wählen">
+          <button class="iconbtn" id="nextDay" type="button" aria-label="Nächster Tag">›</button>
+        </div>
+      </section>
+      <section class="card" id="am-card" aria-labelledby="amTitle">
+        <div class="fhead"><h2 id="amTitle">Morgen-Check-in</h2><span class="small" id="am-time"></span></div>
+        <div class="stack" id="am-done" hidden>
+          <p class="sumline" id="am-sum"></p>
+          <div class="actions"><button class="btn" id="am-edit" type="button">Ändern</button><span class="msg" id="am-done-msg" role="status"></span></div>
+        </div>
+        <div class="stack" id="am-later" hidden>
+          <p class="small">An diesem Tag gab es keinen Check-in.</p>
+          <div class="actions"><button class="btn" id="am-open" type="button">Nachtragen</button><span class="msg" id="am-later-msg" role="status"></span></div>
+        </div>
+        <form class="form" id="am-form" hidden>
+          <div class="field">
+            <div class="fhead"><span class="fl">Stimmung</span><span class="fval" id="v-am-mood">–</span></div>
+            <div class="seg k-mood" id="s-am-mood" role="group" aria-label="Stimmung am Morgen 1 bis 10"></div>
+            <div class="ends"><span>1 sehr schlecht</span><span>10 sehr gut</span></div>
+          </div>
+          <div class="field">
+            <div class="fhead"><span class="fl">Angst</span><span class="fval" id="v-am-anx">–</span></div>
+            <div class="seg k-anx" id="s-am-anx" role="group" aria-label="Angst am Morgen 1 bis 10"></div>
+            <div class="ends"><span>1 keine</span><span>10 sehr stark</span></div>
+          </div>
+          <div class="field">
+            <div class="fhead"><span class="fl">Antrieb</span><span class="fval" id="v-am-drive">–</span></div>
+            <div class="seg k-drive" id="s-am-drive" role="group" aria-label="Antrieb am Morgen 1 bis 10"></div>
+            <div class="ends"><span>1 kaum</span><span>10 viel</span></div>
+          </div>
+          <label class="fl" for="am-intent">Was ist heute das Eine, das zählt? <span class="small">(optional)</span></label>
+          <input id="am-intent" type="text" maxlength="120" placeholder="z. B. Arzttermin ausmachen" autocomplete="off">
+          <p class="hint" id="amLowHint" hidden>Ein schwerer Start. Du musst das nicht allein tragen: Die Telefonseelsorge ist rund um die Uhr erreichbar, kostenlos und anonym, unter 0800 111 0 111 oder 0800 111 0 222.</p>
+          <div class="actions">
+            <button class="btn primary" id="am-save" type="submit">Check-in speichern</button>
+            <button class="btn" id="am-cancel" type="button" hidden>Abbrechen</button>
+            <button class="btn" id="am-del" type="button" hidden>Löschen</button>
+            <span class="msg" id="am-msg" role="status"></span>
+          </div>
+        </form>
+      </section>
+      <section class="card" id="feel-card" data-addon="feel" aria-labelledby="feelTitle">
+        <div class="fhead"><h2 id="feelTitle">Gefühle</h2><span class="small" id="feel-count"></span></div>
+        <p class="small">Tippe an, was du gerade fühlst. Es wird mit Uhrzeit gespeichert.</p>
+        <div class="feel-group">
+          <h3 class="sub3">Schwer</h3>
+          <div class="chips feel-chips" id="feel-hard"></div>
+        </div>
+        <div class="feel-group">
+          <h3 class="sub3">Leichter</h3>
+          <div class="chips feel-chips" id="feel-good"></div>
+        </div>
+        <form class="form feel-form" id="feel-form" hidden>
+          <h3 class="sub3" id="feel-form-title"></h3>
+          <div class="form" id="feel-other-wrap" hidden>
+            <label class="fl" for="feel-other">Welches Gefühl?</label>
+            <input id="feel-other" type="text" maxlength="40" autocomplete="off">
+          </div>
+          <span class="fl" id="feel-lvl-label">Wie stark?</span>
+          <div class="chips" id="feel-lvl" role="group" aria-labelledby="feel-lvl-label"></div>
+          <label class="fl" for="feel-trig">Was hat es ausgelöst? <span class="small">(optional)</span></label>
+          <input id="feel-trig" type="text" maxlength="200" placeholder="z. B. eine Mail, zu viel Lärm, ein Gedanke" autocomplete="off">
+          <div class="feel-time"><label class="fl" for="feel-time">Uhrzeit</label><input id="feel-time" type="time" required></div>
+          <div class="actions">
+            <button class="btn primary" id="feel-save" type="submit">Speichern</button>
+            <button class="btn" id="feel-cancel" type="button">Abbrechen</button>
+            <button class="btn danger" id="feel-del" type="button" hidden>Löschen</button>
+            <span class="msg" id="feel-form-msg" role="alert"></span>
+          </div>
+        </form>
+        <p class="hint" id="feelHint" hidden>Das klingt gerade sehr schwer. Du musst das nicht allein tragen: Die Telefonseelsorge ist rund um die Uhr erreichbar, kostenlos und anonym, unter 0800 111 0 111 oder 0800 111 0 222. In akuter Gefahr: 112.</p>
+        <span class="msg" id="feel-msg" role="status"></span>
+      </section>
+      <section class="card" id="pm-card" aria-labelledby="pmTitle">
+        <div class="fhead"><h2 id="pmTitle">Abend-Check-out</h2><span class="small" id="pm-time"></span></div>
+        <div class="stack" id="pm-done" hidden>
+          <p class="sumline" id="pm-sum"></p>
+          <div class="actions"><button class="btn" id="pm-edit" type="button">Ändern</button><span class="msg" id="pm-done-msg" role="status"></span></div>
+        </div>
+        <div class="stack" id="pm-later" hidden>
+          <p class="small" id="pm-later-text"></p>
+          <div class="actions"><button class="btn" id="pm-open" type="button">Jetzt ausfüllen</button><span class="msg" id="pm-later-msg" role="status"></span></div>
+        </div>
+        <div class="stack" id="pm-form" hidden>
+        <div class="field" id="intent-field" hidden>
+          <span class="fl" id="intent-label">Dein Vorhaben: <span id="intent-text"></span></span>
+          <div class="chips" id="intent-done" role="group" aria-labelledby="intent-label"></div>
+        </div>
+        <div class="field">
+          <div class="fhead"><span class="fl">Stimmung am Abend</span><span class="fval" id="v-mood">–</span></div>
+          <div class="seg k-mood" id="s-mood" role="group" aria-label="Stimmung 1 bis 10"></div>
+          <div class="ends"><span>1 sehr schlecht</span><span>10 sehr gut</span></div>
+        </div>
+        <div class="field">
+          <div class="fhead"><span class="fl">Angst</span><span class="fval" id="v-anx">–</span></div>
+          <div class="seg k-anx" id="s-anx" role="group" aria-label="Angst 1 bis 10"></div>
+          <div class="ends"><span>1 keine</span><span>10 sehr stark</span></div>
+        </div>
+        <div class="field">
+          <div class="fhead"><span class="fl">Antrieb</span><span class="fval" id="v-drive">–</span></div>
+          <div class="seg k-drive" id="s-drive" role="group" aria-label="Antrieb 1 bis 10"></div>
+          <div class="ends"><span>1 kaum</span><span>10 viel</span></div>
+        </div>
+
+        <p class="hint" id="lowHint" hidden>Heute ist ein schwerer Tag. Du musst das nicht allein tragen: Die Telefonseelsorge ist rund um die Uhr erreichbar, kostenlos und anonym, unter 0800 111 0 111 oder 0800 111 0 222.</p>
+
+        <div class="field"><span class="fl">Was hast du heute gemacht?</span><div class="chips" id="acts"></div></div>
+        <div class="field" data-addon="meds"><span class="fl">Medikamente <span class="small">(Tagesüberblick; einzelne Einnahmen mit Uhrzeit unter „Verlauf &amp; mehr“ → „Tabletten“)</span></span><div class="meds" id="meds"></div></div>
+        <div class="field">
+          <label class="fl" for="note">Notiz</label>
+          <textarea id="note" placeholder="Was war heute los? Was hat geholfen, was war schwer?"></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="save" type="button">Check-out speichern</button>
+          <button class="btn" id="del" type="button" hidden>Löschen</button>
+          <button class="btn danger" id="delConfirm" type="button" hidden>Wirklich löschen</button>
+          <button class="btn" id="pm-cancel" type="button" hidden>Abbrechen</button>
+          <span class="msg" id="saveMsg" role="status"></span>
+        </div>
+        </div>
+      </section>
+      <section class="card" id="sum-card" aria-labelledby="sumTitle">
+        <div class="fhead"><h2 id="sumTitle">Tagesübersicht</h2><span class="small" id="sum-stat"></span></div>
+        <ol class="timeline" id="timeline"></ol>
+        <p class="empty" id="sum-empty">Für diesen Tag ist noch nichts eingetragen.</p>
+      </section>
+      <section class="card" id="prog-card" data-addon="tests" aria-labelledby="progTitle">
+        <div class="fhead"><h2 id="progTitle">Mein Verlauf</h2></div>
+        <div class="chips small-chips" id="prog-pick" role="group" aria-label="Fragebogen wählen">
+          <button type="button" class="chip" data-test="phq" aria-pressed="true">Depression · PHQ-9</button>
+          <button type="button" class="chip" data-test="gad" aria-pressed="false">Angst · GAD-7</button>
+        </div>
+        <div class="bars" id="prog-bars"></div>
+        <button class="btn wide" id="prog-go" type="button"></button>
+        <p class="small">Ein Balken zeigt den letzten Fragebogen im Monat. Sinnvoll ist ein Fragebogen alle zwei Wochen. Das ist ein Screening, keine Diagnose. <button class="link" id="prog-all" type="button">Alle Ergebnisse</button></p>
+      </section>
+      <section class="card" id="phq-card" data-addon="tests" hidden aria-labelledby="phqTitle">
+        <div class="fhead"><h2 id="phqTitle">Depressions-Selbsttest (PHQ-9)</h2><span class="small" id="phq-due"></span><button class="btn" id="phq-close" type="button">Schließen</button></div>
+
+        <div class="stack" id="phq-overview">
+          <p class="small">Neun Fragen zu den letzten zwei Wochen, dauert etwa zwei Minuten. Sinnvoll ist ein Test alle zwei Wochen. Der PHQ-9 ist ein anerkannter Screening-Fragebogen, aber keine Diagnose. Die Auswertung passiert nur auf deinem Gerät.</p>
+          <div class="chartbox" id="phq-chart"></div>
+          <ul class="phq-list" id="phq-list"></ul>
+          <div class="actions"><button class="btn primary" id="phq-start" type="button">Test starten</button><span class="msg" id="phq-msg" role="status"></span></div>
+        </div>
+
+        <form class="form" id="phq-form" hidden novalidate>
+          <p class="fl">Wie oft fühlten Sie sich im Verlauf der letzten 2 Wochen durch die folgenden Beschwerden beeinträchtigt?</p>
+          <ol class="phq-items" id="phq-items"></ol>
+          <fieldset class="phq-q" id="phq-diff-wrap">
+            <legend>Wenn eines oder mehrere dieser Probleme bei Ihnen vorliegen, geben Sie bitte an, wie sehr diese Probleme es Ihnen erschwert haben, Ihre Arbeit zu erledigen, Ihren Haushalt zu regeln oder mit anderen Menschen zurecht zu kommen: <span class="small">(optional)</span></legend>
+            <div class="phq-opts" id="phq-diff"></div>
+          </fieldset>
+          <div class="actions">
+            <button class="btn primary" id="phq-submit" type="submit">Auswerten und speichern</button>
+            <button class="btn" id="phq-cancel" type="button">Abbrechen</button>
+            <span class="msg" id="phq-form-msg" role="alert"></span>
+          </div>
+        </form>
+
+        <div class="stack" id="phq-result" hidden aria-live="polite"></div>
+
+        <p class="small attrib">PHQ-9 nach Kroenke, Spitzer &amp; Williams; deutsche Fassung „Gesundheitsfragebogen für Patienten“ (PHQ-D) von Löwe, Spitzer, Zipfel &amp; Herzog. Frei verwendbar, ohne Genehmigung.</p>
+      </section>
+      <section class="card" id="gad-card" data-addon="tests" hidden aria-labelledby="gadTitle">
+        <div class="fhead"><h2 id="gadTitle">Angst-Selbsttest (GAD-7)</h2><span class="small" id="gad-due"></span><button class="btn" id="gad-close" type="button">Schließen</button></div>
+
+        <div class="stack" id="gad-overview">
+          <p class="small">Sieben Fragen zu Ängsten und Sorgen in den letzten zwei Wochen, dauert etwa eine Minute. Sinnvoll ist ein Test alle zwei Wochen. Der GAD-7 ist ein anerkannter Screening-Fragebogen, aber keine Diagnose. Die Auswertung passiert nur auf deinem Gerät.</p>
+          <div class="chartbox" id="gad-chart"></div>
+          <ul class="phq-list" id="gad-list"></ul>
+          <div class="actions"><button class="btn primary" id="gad-start" type="button">Test starten</button><span class="msg" id="gad-msg" role="status"></span></div>
+        </div>
+
+        <form class="form" id="gad-form" hidden novalidate>
+          <p class="fl">Wie oft fühlten Sie sich im Verlauf der letzten 2 Wochen durch die folgenden Beschwerden beeinträchtigt?</p>
+          <ol class="phq-items" id="gad-items"></ol>
+          <fieldset class="phq-q" id="gad-diff-wrap">
+            <legend>Wenn eines oder mehrere dieser Probleme bei Ihnen vorliegen, geben Sie bitte an, wie sehr diese Probleme es Ihnen erschwert haben, Ihre Arbeit zu erledigen, Ihren Haushalt zu regeln oder mit anderen Menschen zurecht zu kommen: <span class="small">(optional)</span></legend>
+            <div class="phq-opts" id="gad-diff"></div>
+          </fieldset>
+          <div class="actions">
+            <button class="btn primary" id="gad-submit" type="submit">Auswerten und speichern</button>
+            <button class="btn" id="gad-cancel" type="button">Abbrechen</button>
+            <span class="msg" id="gad-form-msg" role="alert"></span>
+          </div>
+        </form>
+
+        <div class="stack" id="gad-result" hidden aria-live="polite"></div>
+
+        <p class="small attrib">GAD-7 nach Spitzer, Kroenke, Williams &amp; Löwe (2006); deutsche Fassung von Löwe et al. (2008). Frei verwendbar, ohne Genehmigung.</p>
+      </section>
+    </div>
+    <div class="stack" id="pane-more" role="tabpanel" aria-labelledby="tab-more" hidden>
+      <section class="card" id="addons-card" aria-labelledby="addonsTitle">
+        <h2 id="addonsTitle">Add-ons</h2>
+        <p class="small">Kopfwetter bleibt schlicht. Schalte nur ein, was dir hilft. Die Einstellung gilt in der App und im Browser. Ausgeschaltete Add-ons behalten ihre Einträge.</p>
+        <ul class="addons" id="addons"></ul>
+        <span class="msg" id="addons-msg" role="status"></span>
+      </section>
+      <section class="card" aria-labelledby="chartTitle">
+        <div class="fhead"><h2 id="chartTitle">Letzte 30 Tage</h2><span class="small">Abendwerte; ohne Check-out die Werte vom Morgen</span>
+          <div class="legend"><span class="k-mood">Stimmung</span><span class="k-anx">Angst</span><span class="k-drive">Antrieb</span></div>
+        </div>
+        <div class="chartbox" id="chart"></div>
+      </section>
+      <section class="card" aria-labelledby="histTitle">
+        <h2 id="histTitle">Verlauf</h2>
+        <ul class="hist" id="hist"></ul>
+        <p class="empty" id="histEmpty">Noch keine Einträge. Wähle oben deine Werte für heute und speichere den ersten Eintrag.</p>
+      </section>
+      <section class="card" id="patterns-card" data-addon="patterns" aria-labelledby="patTitle">
+        <div class="fhead"><h2 id="patTitle">Muster</h2>
+          <div class="chips small-chips" id="pat-range" role="group" aria-label="Zeitraum für Wochentage und Aktivitäten">
+            <button type="button" class="chip" data-days="30" aria-pressed="false">30 Tage</button>
+            <button type="button" class="chip" data-days="90" aria-pressed="true">3 Monate</button>
+            <button type="button" class="chip" data-days="365" aria-pressed="false">1 Jahr</button>
+          </div>
+        </div>
+        <p class="small">Zusammenhänge in deinen Einträgen, nur auf deinem Gerät berechnet. Sie zeigen, was gemeinsam auftritt, nicht was was verursacht.</p>
+        <div class="pat-block">
+          <h3 class="sub3">Stimmung im letzten Jahr</h3>
+          <div class="chartbox" id="pat-heat"></div>
+          <div class="heat-legend" aria-hidden="true"><span>schlecht</span><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i><i class="h5"></i><span>gut</span><i class="h0"></i><span>kein Eintrag</span></div>
+        </div>
+        <div class="pat-block">
+          <h3 class="sub3">Nach Wochentag</h3>
+          <div class="chartbox" id="pat-week"></div>
+        </div>
+        <div class="pat-block">
+          <h3 class="sub3">Aktivitäten und Stimmung</h3>
+          <ul class="pat-acts" id="pat-acts"></ul>
+        </div>
+        <p class="empty" id="pat-empty" hidden>Sobald du ein paar Wochen eingetragen hast, erscheinen hier Muster.</p>
+      </section>
+      <section class="card" id="med-card" data-addon="meds" aria-labelledby="medTitle">
+        <div class="fhead"><h2 id="medTitle">Tabletten</h2><span class="small" id="med-day"></span></div>
+
+        <div class="stack" id="med-empty" hidden>
+          <p class="small">Lege einmal deine Medikamente mit Dosis und geplanten Uhrzeiten an. Danach trägst du jede Einnahme mit einem Tipp ein.</p>
+        </div>
+
+        <div class="stack" id="med-today">
+          <div class="med-plan" id="med-plan"></div>
+          <ul class="intakes" id="intakes"></ul>
+          <p class="small" id="intakes-empty">Für diesen Tag ist noch keine Einnahme eingetragen.</p>
+        </div>
+
+        <form class="form intake-form" id="intake-form" hidden>
+          <h3 class="sub3" id="intake-title">Einnahme eintragen</h3>
+          <div class="grid2">
+            <div class="form"><label class="fl" for="i-med">Medikament</label><select id="i-med" required></select></div>
+            <div class="form"><label class="fl" for="i-time">Uhrzeit</label><input id="i-time" type="time" required></div>
+            <div class="form"><label class="fl" for="i-dose">Dosis</label><input id="i-dose" type="text" maxlength="40" placeholder="z. B. 50 mg oder 1 Tablette"></div>
+            <div class="form"><label class="fl" for="i-date">Datum</label><input id="i-date" type="date" required></div>
+          </div>
+          <label class="fl" for="i-note">Notiz <span class="small">(optional, z. B. Nebenwirkungen, mit Essen)</span></label>
+          <input id="i-note" type="text" maxlength="200">
+          <div class="actions">
+            <button class="btn primary" id="i-save" type="submit">Speichern</button>
+            <button class="btn" id="i-cancel" type="button">Abbrechen</button>
+            <button class="btn danger" id="i-delete" type="button" hidden>Löschen</button>
+            <span class="msg" id="intake-msg" role="status"></span>
+          </div>
+        </form>
+
+        <div class="actions" id="med-actions">
+          <button class="btn" id="intake-other" type="button">Andere Einnahme eintragen</button>
+          <span class="msg" id="med-msg" role="status"></span>
+        </div>
+
+        <details id="med-manage">
+          <summary>Medikamente verwalten</summary>
+          <ul class="medlist" id="medlist"></ul>
+          <form class="form" id="med-form">
+            <h3 class="sub3" id="med-form-title">Medikament hinzufügen</h3>
+            <div class="grid2">
+              <div class="form"><label class="fl" for="m-name">Name</label><input id="m-name" type="text" maxlength="60" required placeholder="z. B. Sertralin"></div>
+              <div class="form"><label class="fl" for="m-dose">Dosis</label><input id="m-dose" type="text" maxlength="40" placeholder="z. B. 50 mg"></div>
+            </div>
+            <label class="fl" for="m-times">Geplante Uhrzeiten <span class="small">(optional, mit Komma getrennt, z. B. 08:00, 20:00; leer = bei Bedarf)</span></label>
+            <input id="m-times" type="text" maxlength="80" inputmode="numeric" placeholder="08:00, 20:00">
+            <div class="actions">
+              <button class="btn primary" id="m-save" type="submit">Hinzufügen</button>
+              <button class="btn" id="m-cancel" type="button" hidden>Abbrechen</button>
+              <span class="msg" id="med-form-msg" role="status"></span>
+            </div>
+          </form>
+        </details>
+      </section>
+      <section class="card" id="sess-card" data-addon="therapy" aria-labelledby="sessTitle">
+        <div class="fhead"><h2 id="sessTitle">Für die nächste Sitzung</h2><span class="small" id="sess-count"></span></div>
+        <p class="small">Gedanken, Fragen und Erlebnisse, die du in der Therapie ansprechen möchtest. Sie erscheinen im PDF-Bericht.</p>
+        <form class="sess-add" id="sess-form">
+          <label class="sr" for="sess-text">Neue Notiz</label>
+          <input id="sess-text" type="text" maxlength="500" placeholder="Was möchtest du ansprechen?" autocomplete="off">
+          <button class="btn primary" id="sess-add" type="submit">Hinzufügen</button>
+        </form>
+        <ul class="sess-list" id="sess-open"></ul>
+        <p class="small" id="sess-empty">Noch nichts notiert.</p>
+        <details id="sess-done-wrap" hidden><summary id="sess-done-sum">Besprochen</summary><ul class="sess-list done" id="sess-done"></ul></details>
+        <span class="msg" id="sess-msg" role="status"></span>
+      </section>
+      <section class="card" id="rep-card" data-addon="therapy" aria-labelledby="repTitle">
+        <h2 id="repTitle">Bericht für die Therapie</h2>
+        <p class="small">Ein PDF mit Durchschnittswerten, Verlaufsdiagramm, Aktivitäten und allen Tageseinträgen im gewählten Zeitraum. Es entsteht in deinem Browser, dabei gehen keine Daten an den Server.</p>
+        <form class="form" id="rep-form">
+          <span class="fl" id="rep-range-label">Zeitraum</span>
+          <div class="chips" id="rep-range" role="group" aria-labelledby="rep-range-label">
+            <button type="button" class="chip" data-range="14" aria-pressed="false">14 Tage</button>
+            <button type="button" class="chip" data-range="30" aria-pressed="true">30 Tage</button>
+            <button type="button" class="chip" data-range="90" aria-pressed="false">3 Monate</button>
+            <button type="button" class="chip" data-range="all" aria-pressed="false">Alles</button>
+            <button type="button" class="chip" data-range="custom" aria-pressed="false">Eigener Zeitraum</button>
+          </div>
+          <div class="daterange" id="rep-custom" hidden>
+            <label for="rep-from">von</label><input type="date" id="rep-from">
+            <label for="rep-to">bis</label><input type="date" id="rep-to">
+          </div>
+          <label class="fl" for="rep-name">Name auf dem Bericht <span class="small">(optional)</span></label>
+          <input id="rep-name" type="text" autocomplete="name" maxlength="80">
+          <label class="check"><input type="checkbox" id="rep-notes" checked> Notizen einschließen</label>
+          <label class="check"><input type="checkbox" id="rep-sess" checked> Offene Punkte „Für die nächste Sitzung“ einschließen</label>
+          <div class="actions"><button class="btn primary" id="rep-go" type="submit">PDF erstellen</button><span class="msg" id="rep-msg" role="status"></span></div>
+        </form>
+      </section>
+      <section class="card" id="admin-card" hidden aria-labelledby="adminTitle">
+        <div class="fhead"><h2 id="adminTitle">Verwaltung</h2><span class="badge" id="pending-badge" hidden></span></div>
+        <p class="small">Hier gibst du neue Konten frei. Einträge anderer Konten kannst du nicht sehen: Sie sind mit deren Passwort verschlüsselt.</p>
+        <ul class="users" id="users"></ul>
+        <span class="msg" id="admin-msg" role="status"></span>
+      </section>
+      <section class="card" aria-labelledby="secTitle">
+        <h2 id="secTitle">Sicherheit</h2>
+        <div class="no-demo">
+          <label class="fl" for="lock-mode">Automatisch sperren</label>
+          <select id="lock-mode"></select>
+          <p class="small">Nach einer Sperre entsperrst du mit deinem Passwort, ohne Code. Die Einstellung gilt nur für dieses Gerät.</p>
+        </div>
+        <div class="rk no-demo" id="rk-box">
+          <h3 class="sub3">Wiederherstellungsschlüssel</h3>
+          <p class="small" id="rk-status"></p>
+          <div class="actions"><button class="btn" id="rk-new" type="button">Schlüssel erstellen</button></div>
+          <form class="form" id="rk-form" hidden>
+            <p class="small">Zur Sicherheit brauchst du dein Passwort und den Code aus der Authenticator-App. Ein vorhandener Schlüssel wird danach ungültig.</p>
+            <label class="fl" for="rk-pw">Passwort</label>
+            <input id="rk-pw" type="password" autocomplete="current-password" required>
+            <label class="fl" for="rk-code">Code aus der Authenticator-App</label>
+            <input id="rk-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+            <div class="actions"><button class="btn primary" id="rk-make" type="submit">Weiter</button><button class="btn" id="rk-cancel" type="button">Abbrechen</button><span class="msg" id="rk-msg" role="alert"></span></div>
+          </form>
+          <div class="form" id="rk-show" hidden>
+            <p><strong>Dein Wiederherstellungsschlüssel.</strong> Schreib ihn ab, druck ihn aus oder speichere ihn im Passwortmanager, getrennt von deinem Passwort. Er wird nur dieses eine Mal angezeigt.</p>
+            <pre class="rkey" id="rk-key"></pre>
+            <div class="actions"><button class="btn" id="rk-copy" type="button">Kopieren</button><button class="btn" id="rk-file" type="button">Als Datei speichern</button></div>
+            <label class="fl" for="rk-verify">Zur Kontrolle: die letzten vier Zeichen</label>
+            <input id="rk-verify" class="mono" type="text" maxlength="4" autocapitalize="characters" spellcheck="false" autocomplete="off">
+            <div class="actions"><button class="btn primary" id="rk-save" type="button">Schlüssel aktivieren</button><button class="btn" id="rk-abort" type="button">Verwerfen</button><span class="msg" id="rk-msg2" role="alert"></span></div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="export" type="button">Sicherheitskopie herunterladen (CSV)</button>
+          <button class="btn" id="export-meds" data-addon="meds" type="button">Einnahmen herunterladen (CSV)</button>
+          <button class="btn" id="export-feel" data-addon="feel" type="button">Gefühle herunterladen (CSV)</button>
+        </div>
+        <p class="small">Die Sicherheitskopie ist <strong>unverschlüsselt</strong>. Gut für Arzttermine oder als zusätzliche Rückfallebene. Bewahre sie entsprechend sicher auf.</p>
+        <details id="io-box">
+          <summary>Alles exportieren oder importieren</summary>
+          <p class="small">Der Export enthält <strong>alle</strong> deine Daten als JSON-Datei: Einträge, Gefühle, Tests, Medikamente, Einnahmen, Krisenplan und Notizen. Er ist <strong>unverschlüsselt</strong>. Damit ziehst du in ein neues Konto oder auf einen anderen Server um: Dort importierst du die Datei, und alles wird mit dem neuen Schlüssel verschlüsselt. Vorhandene Daten mit gleichem Datum oder gleicher Kennung werden dabei überschrieben.</p>
+          <div class="actions">
+            <button class="btn" id="export-json" type="button">Alles exportieren (JSON)</button>
+            <label class="btn" for="import-file" id="import-label">Export importieren …</label>
+            <input type="file" id="import-file" accept="application/json,.json" hidden>
+          </div>
+          <p class="msg" id="io-msg" role="status"></p>
+        </details>
+        <details class="no-demo">
+          <summary>Passwort ändern</summary>
+          <form class="form" id="pw-form">
+            <label class="fl" for="p-old">Aktuelles Passwort</label>
+            <input id="p-old" type="password" autocomplete="current-password" required>
+            <label class="fl" for="p-new">Neues Passwort <span class="small">(mindestens 12 Zeichen)</span></label>
+            <input id="p-new" type="password" autocomplete="new-password" minlength="12" required>
+            <label class="fl" for="p-new2">Neues Passwort wiederholen</label>
+            <input id="p-new2" type="password" autocomplete="new-password" minlength="12" required>
+            <label class="fl" for="p-code">Code aus der Authenticator-App</label>
+            <input id="p-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+            <p class="small">Deine Einträge bleiben unverändert. Ein Wiederherstellungsschlüssel bleibt gültig. Andere Geräte werden abgemeldet.</p>
+            <div class="actions"><button class="btn primary" id="p-go" type="submit">Passwort ändern</button><span class="msg" id="pw-msg" role="status"></span></div>
+          </form>
+        </details>
+        <details class="no-demo">
+          <summary>Konto löschen</summary>
+          <form class="form" id="del-form">
+            <p class="small">Löscht dein Konto und <strong>alle Einträge</strong> endgültig. Lade vorher eine Sicherheitskopie herunter, wenn du sie behalten möchtest.</p>
+            <label class="fl" for="d-pw">Passwort</label>
+            <input id="d-pw" type="password" autocomplete="current-password" required>
+            <label class="fl" for="d-code">Code aus der Authenticator-App</label>
+            <input id="d-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+            <label class="check"><input type="checkbox" id="d-sure" required> Ja, alles endgültig löschen</label>
+            <div class="actions"><button class="btn danger" id="d-go" type="submit">Konto löschen</button><span class="msg" id="del-msg" role="alert"></span></div>
+          </form>
+        </details>
+      </section>
+    </div>
+  </div>
+
+  <div class="danger-layer" id="danger" hidden>
+    <section class="card danger-card" role="dialog" aria-modal="true" aria-labelledby="dangerTitle">
+      <h2 id="dangerTitle">Du bist nicht allein.</h2>
+      <p>Ruf jetzt jemanden an. Es ist richtig, Hilfe zu holen.</p>
+      <div class="stack danger-actions" id="danger-actions"></div>
+      <button class="btn" id="danger-close" type="button">Zurück</button>
+    </section>
+  </div>
+
+  <footer>
+    <p>Ende-zu-Ende verschlüsselt: Einträge werden in deinem Browser verschlüsselt, bevor sie den Server erreichen.</p>
+    <p class="links" id="links" hidden></p>
+    <p>In einer akuten Krise: Telefonseelsorge 0800 111 0 111 · 0800 111 0 222 (24/7, kostenlos) · Notruf 112.</p>
+  </footer>
+</div>
+</body>
+</html>

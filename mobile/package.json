@@ -1,0 +1,33 @@
+{
+  "name": "kopfwetter-app-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "iOS- und Android-App für Kopfwetter (Capacitor)",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-www.mjs",
+    "sync": "npm run build && cap sync",
+    "assets": "capacitor-assets generate --android --ios --iconBackgroundColor '#3f5e8c' --iconBackgroundColorDark '#3f5e8c' --splashBackgroundColor '#eef1f5' --splashBackgroundColorDark '#151a21'",
+    "android": "npm run sync && cap open android",
+    "ios": "npm run sync && cap open ios"
+  },
+  "dependencies": {
+    "@aparajita/capacitor-secure-storage": "8.0.1",
+    "@capacitor/android": "8.5.3",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/filesystem": "8.1.4",
+    "@capacitor/ios": "8.5.3",
+    "@capacitor/share": "8.0.3",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capacitor/status-bar": "8.0.4",
+    "@noble/ciphers": "2.4.0",
+    "@noble/hashes": "2.4.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "8.5.3",
+    "esbuild": "0.28.2"
+  },
+  "license": "AGPL-3.0-or-later"
+}

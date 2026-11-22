@@ -1,0 +1,25 @@
+# Demo-Instanz: eigene Datenbank, eigenes APP_SECRET, eigener Port. Nie mit der echten data/ betreiben.
+#   cp .env.demo.example .env.demo   # ausfüllen
+#   mkdir -p data-demo && sudo chown 1000:1000 data-demo
+#   docker compose -f compose.demo.yaml up -d --build
+name: kopfwetter-demo
+services:
+  kopfwetter-demo:
+    build: .
+    container_name: kopfwetter-demo
+    restart: unless-stopped
+    env_file: .env.demo
+    environment:
+      TZ: Europe/Berlin
+      DEMO_MODE: "1"
+    volumes:
+      - ./data-demo:/data
+    ports:
+      - "127.0.0.1:8087:8000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m

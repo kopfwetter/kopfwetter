@@ -1,0 +1,50 @@
+# Geheimnisse und Nutzerdaten – niemals committen
+.env
+.env.*
+!.env.example
+!.env.demo.example
+data/
+data-demo/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite*
+backups/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Node / Mobile
+node_modules/
+mobile/www/
+mobile/android/app/build/
+mobile/android/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/release/
+mobile/ios/App/Pods/
+mobile/ios/App/build/
+mobile/ios/DerivedData/
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+keystore.properties
+
+# Editor / System
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# von "npx cap sync" erzeugt
+mobile/android/app/src/main/assets/public/
+mobile/android/app/src/main/assets/capacitor.config.json
+mobile/android/app/src/main/assets/capacitor.plugins.json
+mobile/ios/App/App/public/
+mobile/ios/App/App/capacitor.config.json
+mobile/ios/App/App/config.xml
